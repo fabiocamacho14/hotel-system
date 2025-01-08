@@ -1,0 +1,4 @@
+package com.oranet.hotelsystem.model;
+
+public enum FormaPagamento {
+}
