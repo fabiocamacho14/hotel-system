@@ -60,7 +60,6 @@ public class QuartoService {
     public List<LocalDate> buscarDatasDisponiveisNoMes(Hotel hotel, String codigoQuarto, Integer mes) {
         Quarto quarto = buscarPorCodigoQuarto(codigoQuarto, hotel);
         Period period = Period.between(LocalDate.now(), LocalDate.now().plusMonths(1));
-//        TODO fazer a busca de dias disponíveis no mês
-        return null;
+//        TODO fazer o cálculo do período
     }
 }

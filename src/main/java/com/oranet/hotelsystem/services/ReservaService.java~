@@ -26,16 +26,21 @@ public class ReservaService {
     @Autowired
     private UsuarioService usuarioService;
 
-    @Autowired
-    private QuartoService quartoService;
-
     @Transactional
     public Reserva fazerReserva(Usuario usuario, Reserva reserva) {
         Integer hotelId = reserva.getHotel().getId();
         Hotel hotel = hotelService.buscarHotel(hotelId);
         reserva.setHotel(hotel);
 
-        Quarto quarto = quartoService.buscarPorCodigoQuarto(reserva.getQuarto().getCodigoQuarto(), hotel);
+        Quarto quarto = quartoRepository.findByCodigoQuartoAndHotel(
+                reserva.getQuarto().getCodigoQuarto(),
+                hotel
+        ).orElseThrow(
+                () -> new EntidadeNaoEncontradaException(
+                        "Quarto de codigo " + reserva.getQuarto().getCodigoQuarto() +
+                        " não encontrado no hotel de id " + hotelId)
+
+        );
 
         reserva.setQuarto(quarto);
 

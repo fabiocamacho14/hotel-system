@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface QuartoRepository extends CrudRepository<Quarto, Integer> {
 
-    Optional<Quarto> findByCodigoQuartoAndHotel(String codigoQuarto, Hotel hotel);
+Optional<Quarto> findByCodigoQuartoAndHotel(String codigoQuarto, Hotel hotel);
 
     Optional<Quarto> findById(Integer quartoId);
 
