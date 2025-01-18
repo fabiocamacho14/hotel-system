@@ -3,12 +3,14 @@ package com.oranet.hotelsystem.services;
 import com.oranet.hotelsystem.exceptions.EntidadeNaoEncontradaException;
 import com.oranet.hotelsystem.model.Hotel;
 import com.oranet.hotelsystem.model.Quarto;
+import com.oranet.hotelsystem.model.Reserva;
 import com.oranet.hotelsystem.repository.QuartoRepository;
+import com.oranet.hotelsystem.repository.ReservaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.Period;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -19,6 +21,9 @@ public class QuartoService {
 
     @Autowired
     private HotelService hotelService;
+
+    @Autowired
+    private ReservaRepository reservaRepository;
 
     public Quarto buscarPorId(Integer quartoId) {
         return quartoRepository.findById(quartoId).orElseThrow(
@@ -57,10 +62,19 @@ public class QuartoService {
         quartoRepository.deleteById(quartoId);
     }
 
-    public List<LocalDate> buscarDatasDisponiveisNoMes(Hotel hotel, String codigoQuarto, Integer mes) {
-        Quarto quarto = buscarPorCodigoQuarto(codigoQuarto, hotel);
-        Period period = Period.between(LocalDate.now(), LocalDate.now().plusMonths(1));
-//        TODO fazer a busca de dias disponíveis no mês
-        return null;
+    public List<LocalDate> buscarDatasDisponiveisNoMes(Integer hotelId, String codigoQuarto, Integer mes, Integer ano) {
+        YearMonth yearMonth = YearMonth.of(ano, mes);
+        LocalDate primeiroDiaDoMes = yearMonth.atDay(1);
+        LocalDate ultimoDiaDoMes = yearMonth.atEndOfMonth();
+        Hotel hotel = hotelService.buscarHotel(hotelId);
+
+        List<Reserva> reservas = reservaRepository.buscarReservasNoMesQuarto(hotel, codigoQuarto, mes, ano);
+
+        List<LocalDate> todasAsDatas = primeiroDiaDoMes.datesUntil(ultimoDiaDoMes).toList();
+
+        return todasAsDatas.stream()
+                .filter(data -> reservas.stream()
+                        .noneMatch(reserva -> !data.isBefore(reserva.getDataEntrada() ) && !data.isAfter(reserva.getDataSaida())))
+                .toList();
     }
 }

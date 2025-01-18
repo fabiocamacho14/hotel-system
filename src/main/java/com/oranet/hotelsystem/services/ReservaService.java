@@ -1,5 +1,6 @@
 package com.oranet.hotelsystem.services;
 
+import com.oranet.hotelsystem.exceptionhandler.NegocioException;
 import com.oranet.hotelsystem.exceptions.EntidadeNaoEncontradaException;
 import com.oranet.hotelsystem.model.Hotel;
 import com.oranet.hotelsystem.model.Quarto;
@@ -10,6 +11,9 @@ import com.oranet.hotelsystem.repository.ReservaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ReservaService {
@@ -32,6 +36,29 @@ public class ReservaService {
     @Transactional
     public Reserva fazerReserva(Usuario usuario, Reserva reserva) {
         Integer hotelId = reserva.getHotel().getId();
+
+        Integer mesEntrada = reserva.getDataEntrada().getMonthValue();
+        Integer mesSaida = reserva.getDataSaida().getMonthValue();
+        Integer anoEntrada = reserva.getDataEntrada().getYear();
+        Integer anoSaida =  reserva.getDataSaida().getYear();
+
+        List<LocalDate> datasDisponiveisMesEntrada =  quartoService.buscarDatasDisponiveisNoMes(hotelId, reserva.getQuarto().getCodigoQuarto(), mesEntrada, anoEntrada);
+        List<LocalDate> datasDisponiveisMesSaida =  quartoService.buscarDatasDisponiveisNoMes(hotelId, reserva.getQuarto().getCodigoQuarto(), mesSaida, anoSaida);
+
+        List<LocalDate> datasDaReserva = reserva.getDataEntrada().datesUntil(reserva.getDataSaida()).toList();
+
+        for (LocalDate data : datasDaReserva) {
+            if (!datasDisponiveisMesEntrada.contains(data) || !datasDisponiveisMesSaida.contains(data)) {
+                throw new NegocioException("Não é possível fazer a reserva. Uma das datas está indisponível.");
+            }
+        }
+
+        if (!datasDisponiveisMesEntrada.contains(reserva.getDataEntrada()) || !datasDisponiveisMesSaida.contains(reserva.getDataSaida())) {
+            throw new NegocioException("Não é possível fazer a reserva. Uma das datas está indisponível.");
+        }
+        quartoService.buscarDatasDisponiveisNoMes(hotelId, reserva.getQuarto().getCodigoQuarto(), mesSaida, mesSaida);
+
+
         Hotel hotel = hotelService.buscarHotel(hotelId);
         reserva.setHotel(hotel);
 

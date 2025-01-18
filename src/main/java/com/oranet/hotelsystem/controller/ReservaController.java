@@ -7,6 +7,7 @@ import com.oranet.hotelsystem.model.dto.ReservaModel;
 import com.oranet.hotelsystem.model.dto.input.ReservaInputModel;
 import com.oranet.hotelsystem.services.ReservaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ public class ReservaController {
 
     @PostMapping
     public ReservaModel fazerReserva(@RequestBody ReservaInputModel reservaInputModel) {
+        String usuario = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         Reserva reserva = reservaInputModelDisassembler.toDomainObject(reservaInputModel);
         return reservaModelAssembler.toModel(reservaService.fazerReserva(null, reserva));
     }
